@@ -32,10 +32,19 @@ export const register = async (req, res) => {
       [normalizedEmail]
     );
 
-    if (rosterCheck.rows.length === 0 || !rosterCheck.rows[0].is_eligible) {
+    if (rosterCheck.rows.length === 0) {
+      // Auto-enroll new campus student into eligible_students roster if not previously imported
+      await query(
+        `INSERT INTO eligible_students (name, email, student_id, department, is_eligible, registered_at)
+         VALUES ($1, $2, $3, $4, TRUE, CURRENT_TIMESTAMP)
+         ON CONFLICT (email) DO UPDATE SET is_eligible = TRUE, registered_at = CURRENT_TIMESTAMP;`,
+        [name.trim(), normalizedEmail, normalizedRollNo, department?.trim() || null]
+      );
+    } else if (!rosterCheck.rows[0].is_eligible) {
+      // If student was explicitly disabled by Super Admin, block registration
       return res.status(403).json({
         success: false,
-        message: 'Your college email is not verified on the approved student roster. Please contact the campus Super Admin.'
+        message: 'Your campus account eligibility has been disabled by the Super Admin.'
       });
     }
 
@@ -87,6 +96,8 @@ export const register = async (req, res) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
+    console.log(`✅ Stored student in database: ${newUser.name} (${newUser.email}, ${newUser.roll_number})`);
+
     return res.status(201).json({
       success: true,
       message: 'Student registration successful.',
@@ -124,7 +135,7 @@ export const login = async (req, res) => {
     if (userRes.rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: 'No student account found for this campus email.'
+        message: 'No student account found for this campus email. Please choose "Join campus" to register.'
       });
     }
 
@@ -183,4 +194,3 @@ export const getMe = (req, res) => {
     user: req.user
   });
 };
-

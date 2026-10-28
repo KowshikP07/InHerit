@@ -18,15 +18,17 @@ import { getMyAuctions } from './controllers/auctionController.js';
 import { authenticateToken } from './middleware/auth.js';
 import { initAuctionScheduler } from './services/auctionScheduler.js';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from backend folder regardless of working directory
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_hackathon_jwt_key_inherit_campus_2026';
 
@@ -148,7 +150,9 @@ app.use((err, req, res, next) => {
 initAuctionScheduler();
 
 // 8. Start HTTP Server
-if (process.env.NODE_ENV !== 'test') {
+const isMain = Boolean(process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]));
+
+if (process.env.NODE_ENV !== 'test' && isMain) {
   server.listen(PORT, () => {
     console.log(`🚀 InHerit backend running on port ${PORT}`);
     console.log(`📡 Real-time Socket.IO initialized for client: ${CLIENT_URL}`);

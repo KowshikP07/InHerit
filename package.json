@@ -1,0 +1,12 @@
+{
+  "name": "inherit-monorepo",
+  "version": "1.0.0",
+  "description": "Inherit - A Fair Campus Auction Marketplace (Hackathon Project)",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "seed": "npm --prefix backend run seed",
+    "build:frontend": "npm --prefix frontend run build"
+  },
+  "keywords": ["auction", "campus", "marketplace", "postgresql", "react", "express", "socketio"]
+}

@@ -1,12 +1,22 @@
 import pkg from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from backend folder regardless of working directory
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 const { Pool } = pkg;
 
-const isProduction = process.env.NODE_ENV === 'production';
 const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.warn('⚠️ WARNING: DATABASE_URL is not set in environment! Checked path:', path.resolve(__dirname, '../../.env'));
+}
 
 const poolConfig = connectionString
   ? {
@@ -18,7 +28,7 @@ const poolConfig = connectionString
       port: parseInt(process.env.DB_PORT || '5432', 10),
       user: process.env.DB_USER || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || 'inherit_db',
+      database: process.env.DB_NAME || 'postgres',
       ssl: false
     };
 
@@ -48,10 +58,10 @@ export const getClient = async () => {
   const originalQuery = client.query;
   const originalRelease = client.release;
 
-  // Set a timeout of 5 seconds for safety
+  // Set a timeout of 10 seconds for safety
   const timeout = setTimeout(() => {
-    console.error('A PostgreSQL client has been checked out for more than 5 seconds!');
-  }, 5000);
+    console.error('A PostgreSQL client has been checked out for more than 10 seconds!');
+  }, 10000);
 
   client.release = () => {
     clearTimeout(timeout);

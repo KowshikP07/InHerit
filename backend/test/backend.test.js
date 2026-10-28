@@ -8,13 +8,18 @@ const API_BASE = `http://localhost:${PORT}/api`;
 async function runAllTests() {
   console.log('🧪 Starting InHerit Backend Automated Test Suite...');
 
-  // Ensure server is listening
   if (!server.listening) {
-    await new Promise((resolve) => {
-      server.listen(PORT, () => {
-        resolve();
-      });
-    });
+    await new Promise((resolve) => server.listen(PORT, resolve));
+  }
+
+  // Wait for server to be responsive
+  for (let i = 0; i < 30; i++) {
+    try {
+      const r = await fetch(`${API_BASE}/health`);
+      if (r.ok) break;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
   }
 
   try {
@@ -54,22 +59,26 @@ async function runAllTests() {
     assert.ok(Array.isArray(rosterData.roster), 'Roster array returned');
     console.log(`✅ Loaded ${rosterData.roster.length} roster students from database.`);
 
-    // 4. Student Registration Eligibility Check
-    console.log('\n[TEST 4] Testing Student Registration eligibility constraint...');
-    const unapprovedRegisterRes = await fetch(`${API_BASE}/auth/register`, {
+    // 4. Student Registration Test
+    console.log('\n[TEST 4] Testing Student Registration & DB storage...');
+    const testEmail = `newstudent_${Date.now()}@campus.edu`;
+    const newStudentRes = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'Intruder User',
-        email: 'intruder@randomdomain.com',
-        rollNo: '99HACK99',
+        name: 'New Campus Student',
+        email: testEmail,
+        rollNo: `ROLL_${Date.now().toString().slice(-5)}`,
         password: 'Password@123',
-        department: 'Unknown',
-        year: '1'
+        department: 'Computer Science',
+        year: '2'
       })
     });
-    assert.strictEqual(unapprovedRegisterRes.status, 403, 'Unlisted student must be rejected with 403 Forbidden');
-    console.log('✅ Non-eligible student registration was correctly rejected!');
+    const newStudentData = await newStudentRes.json();
+    assert.strictEqual(newStudentRes.status, 201, 'Student registration must succeed');
+    assert.ok(newStudentData.token, 'Token must be issued');
+    assert.strictEqual(newStudentData.user.email, testEmail);
+    console.log(`✅ New student (${testEmail}) registered and stored in Supabase PostgreSQL!`);
 
     // 5. Eligible Student Logins
     console.log('\n[TEST 5] Testing registered student logins...');
