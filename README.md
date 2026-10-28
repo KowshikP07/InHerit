@@ -1,4 +1,4 @@
-<img width="1862" height="901" alt="image" src="https://github.com/user-attachments/assets/17620c1a-bfb2-4e96-a3e6-3a3fa6aefc0a" /># InHerit
+**# InHerit**
 
 InHerit is a campus marketplace for students who need to sell useful belongings or discover items offered by other students. The prototype uses a Neubrutalist interface and client-side storage
 
