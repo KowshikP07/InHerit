@@ -1,6 +1,25 @@
-# InHerit
+<img width="1862" height="901" alt="image" src="https://github.com/user-attachments/assets/17620c1a-bfb2-4e96-a3e6-3a3fa6aefc0a" /># InHerit
 
-InHerit is a campus marketplace for students who need to sell useful belongings or discover items offered by other students. The prototype uses a Neubrutalist interface and client-side storage; bidding and payments are intentionally not implemented yet.
+InHerit is a campus marketplace for students who need to sell useful belongings or discover items offered by other students. The prototype uses a Neubrutalist interface and client-side storage
+
+**LANDING PAGE**
+<img width="1877" height="912" alt="Screenshot 2026-10-28 160254" src="https://github.com/user-attachments/assets/caa3fef0-f059-4f73-b963-15a8af5fd932" />
+
+**BROWSING AUCTION PAGE**
+<img width="1877" height="903" alt="Screenshot 2026-10-28 160307" src="https://github.com/user-attachments/assets/8e3f2552-c6b9-4661-9df3-72d2902ae264" />
+
+**BIDDING PAGE**
+<img width="1872" height="902" alt="Screenshot 2026-10-28 160804" src="https://github.com/user-attachments/assets/452ddc62-8d11-4062-9b51-b263dd9e1f52" />
+<img width="1867" height="906" alt="Screenshot 2026-10-28 160841" src="https://github.com/user-attachments/assets/b415e127-ef51-4b5f-b33a-032cbdf0fdaa" />
+
+**ADMIN PAGE**
+<img width="1878" height="912" alt="Screenshot 2026-10-28 160352" src="https://github.com/user-attachments/assets/9572f335-1b3b-4859-b1eb-2a6e18d866f4" />
+
+**BULK IMPORT OF STUDENT DATA**
+<img width="1871" height="920" alt="Screenshot 2026-10-28 160403" src="https://github.com/user-attachments/assets/706e1f1e-9c40-4d91-90ec-6fbc13fe4442" />
+
+**LISTING OF STUDENT DATA**
+<img width="1880" height="907" alt="Screenshot 2026-10-28 160416" src="https://github.com/user-attachments/assets/e1e42019-3983-45c8-9fb9-16095deed96d" />
 
 ## Run the frontend
 
