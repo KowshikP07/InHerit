@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 
 const ROSTER_KEY = 'campusbid_eligible_students'
 const HISTORY_KEY = 'campusbid_import_history'
@@ -62,7 +62,7 @@ export async function syncRosterFromBackend() {
       saveImportHistory(histData.history)
     }
   } catch {
-    // Ignore offline errors
+    // Ignore network error if backend is temporarily starting up
   }
 }
 
@@ -172,19 +172,10 @@ export async function registerStudent(profile) {
     sessionStorage.setItem(STUDENT_TOKEN_KEY, data.token)
     return { ok: true, student: data.user }
   } catch {
-    // Fallback registration check
-    const normalizedEmail = normalizeEmail(profile.email)
-    const student = {
-      id: createId('registration'),
-      name: profile.name.trim(),
-      rollNo: profile.rollNo.trim(),
-      email: normalizedEmail,
-      department: profile.department?.trim() || '',
-      year: profile.year,
-      registeredAt: new Date().toISOString(),
+    return {
+      ok: false,
+      message: `Backend server is not reachable at ${API_BASE}. Please start the backend with \`npm run dev:backend\` so student data can be saved to the database.`
     }
-    sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(student))
-    return { ok: true, student }
   }
 }
 
@@ -201,25 +192,13 @@ export async function loginStudent(email, password = 'Student@123') {
       sessionStorage.setItem(STUDENT_TOKEN_KEY, data.token)
       return { ok: true, student: data.user }
     }
+    return { ok: false, message: data.message || 'Login failed.' }
   } catch {
-    // Local fallback
+    return {
+      ok: false,
+      message: `Backend server is not reachable at ${API_BASE}. Please start the backend with \`npm run dev:backend\`.`
+    }
   }
-
-  const existing = getRegistrations().find((item) => normalizeEmail(item.email) === normalizeEmail(email))
-  if (existing) {
-    sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(existing))
-    return { ok: true, student: existing }
-  }
-
-  // Create temporary session if email entered
-  const fallbackStudent = {
-    id: createId('student'),
-    name: email.split('@')[0],
-    email: normalizeEmail(email),
-    role: 'STUDENT'
-  }
-  sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(fallbackStudent))
-  return { ok: true, student: fallbackStudent }
 }
 
 export function getStudentSession() {
@@ -254,7 +233,7 @@ export async function loginAdmin(email, password) {
       return true
     }
   } catch {
-    // Fallback if backend server not running
+    // If backend offline
   }
 
   if (normalizeEmail(email) === 'admin@campusbid.local' && password === 'Admin@123') {

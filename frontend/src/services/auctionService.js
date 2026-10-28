@@ -1,6 +1,6 @@
 import { getStudentToken } from './studentRosterService.js'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 const AUCTION_KEY = 'InHerit_auctions'
 
 export const CATEGORIES = ['Books', 'Calculators', 'Cycles', 'Electronics', 'Hostel Essentials', 'Furniture', 'Other']

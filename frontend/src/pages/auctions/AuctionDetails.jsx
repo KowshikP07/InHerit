@@ -7,7 +7,7 @@ import { fetchAuctionDetails, getAuction, placeBid } from '../../services/auctio
 import { getStudentSession } from '../../services/studentRosterService.js'
 import { formatInr } from '../../utils/auctionDisplay.js'
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'
 
 export default function AuctionDetails() {
   const { id } = useParams()

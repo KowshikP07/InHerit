@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getImage } from '../../services/imageStorageService.js'
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'
 
 export default function AuctionImage({ imageId, alt, className = '' }) {
   const directUrl = typeof imageId === 'string' && (imageId.startsWith('http://') || imageId.startsWith('https://'))
