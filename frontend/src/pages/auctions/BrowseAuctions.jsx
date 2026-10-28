@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, PackageSearch } from 'lucide-react'
 import AuctionImage from '../../components/auctions/AuctionImage.jsx'
 import { closingLabel, formatInr } from '../../utils/auctionDisplay.js'
-import { CATEGORIES, CONDITIONS, getOpenAuctions } from '../../services/auctionService.js'
+import { CATEGORIES, CONDITIONS, getOpenAuctions, syncAuctionsFromBackend } from '../../services/auctionService.js'
 
 export default function BrowseAuctions() {
   const [auctions, setAuctions] = useState(getOpenAuctions)
@@ -13,6 +13,11 @@ export default function BrowseAuctions() {
   const [sort, setSort] = useState('newest')
 
   useEffect(() => {
+    syncAuctionsFromBackend().then((items) => {
+      if (items && Array.isArray(items)) {
+        setAuctions(items.filter((a) => a.status === 'OPEN'))
+      }
+    })
     const sync = () => setAuctions(getOpenAuctions())
     window.addEventListener('inherit-auctions-updated', sync)
     return () => window.removeEventListener('inherit-auctions-updated', sync)
@@ -35,6 +40,6 @@ export default function BrowseAuctions() {
 }
 
 function AuctionCard({ auction }) {
-  return <article className="auction-card-market"><Link className="auction-card-image" to={`/auctions/${auction.id}`}><AuctionImage imageId={auction.imageIds[0]} alt={auction.title} /></Link><div className="auction-card-body"><div className="auction-tags"><span>{auction.category}</span><span>{auction.condition}</span></div><h2><Link to={`/auctions/${auction.id}`}>{auction.title}</Link></h2><p>{auction.description}</p><div className="auction-card-meta"><div><small>STARTING BID</small><strong>{formatInr(auction.startingPrice)}</strong></div><span>+{formatInr(auction.minIncrement)} min.</span></div><div className="auction-seller"><span>By {auction.sellerName}</span><time dateTime={auction.endTime}>{closingLabel(auction.endTime)}</time></div><Link className="market-button market-card-button" to={`/auctions/${auction.id}`}>View listing <ArrowRight /></Link></div></article>
+  const imageKey = (auction.imageIds && auction.imageIds[0]) || (auction.images && auction.images[0]) || ''
+  return <article className="auction-card-market"><Link className="auction-card-image" to={`/auctions/${auction.id}`}><AuctionImage imageId={imageKey} alt={auction.title} /></Link><div className="auction-card-body"><div className="auction-tags"><span>{auction.category}</span><span>{auction.condition}</span></div><h2><Link to={`/auctions/${auction.id}`}>{auction.title}</Link></h2><p>{auction.description}</p><div className="auction-card-meta"><div><small>CURRENT BID</small><strong>{formatInr(auction.currentBid || auction.startingPrice)}</strong></div><span>+{formatInr(auction.minIncrement)} min.</span></div><div className="auction-seller"><span>By {auction.sellerName}</span><time dateTime={auction.endTime}>{closingLabel(auction.endTime)}</time></div><Link className="market-button market-card-button" to={`/auctions/${auction.id}`}>View listing <ArrowRight /></Link></div></article>
 }
-

@@ -1,45 +1,146 @@
-import { Search, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Search, Trash2, ToggleLeft, ToggleRight, Check, X, Users } from 'lucide-react'
 
-export default function StudentTable({ students, search, setSearch, status, setStatus, department, setDepartment, departments, onToggle, onRemove }) {
+export default function StudentTable({
+  students,
+  search,
+  setSearch,
+  status,
+  setStatus,
+  department,
+  setDepartment,
+  departments,
+  onToggle,
+  onRemove,
+}) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="grid gap-3 border-b border-slate-200 p-5 lg:grid-cols-[1fr_180px_180px]">
-        <label className="relative">
-          <span className="sr-only">Search roster</span>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, roll no., email…" className="h-11 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
-        </label>
-        <label>
-          <span className="sr-only">Filter eligibility</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-indigo-500">
-            <option value="all">All statuses</option><option value="eligible">Eligible</option><option value="disabled">Disabled</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">Filter department</span>
-          <select value={department} onChange={(event) => setDepartment(event.target.value)} className="h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-indigo-500">
-            <option value="all">All departments</option>{departments.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
-        </label>
+    <div className="space-y-6">
+      {/* Filter and search bar */}
+      <div className="border-[3px] border-[#171717] bg-white p-5 shadow-[6px_6px_0_#171717]">
+        <div className="grid gap-4 md:grid-cols-[1fr_200px_200px]">
+          <div className="relative">
+            <span className="sr-only">Search roster</span>
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#171717]" size={18} strokeWidth={2.5} />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by name, roll no., or email…"
+              className="admin-input pl-11"
+            />
+          </div>
+
+          <div>
+            <span className="sr-only">Filter eligibility</span>
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              className="admin-select"
+            >
+              <option value="all">All statuses</option>
+              <option value="eligible">Eligible only</option>
+              <option value="disabled">Disabled only</option>
+            </select>
+          </div>
+
+          <div>
+            <span className="sr-only">Filter department</span>
+            <select
+              value={department}
+              onChange={(event) => setDepartment(event.target.value)}
+              className="admin-select"
+            >
+              <option value="all">All departments</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-3 border-t-2 border-[#171717] flex items-center justify-between">
+          <span className="admin-sticker yellow">
+            {students.length} STUDENT{students.length === 1 ? '' : 'S'} LISTED
+          </span>
+          {(search || status !== 'all' || department !== 'all') && (
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setStatus('all'); setDepartment('all') }}
+              className="text-xs font-mono font-bold text-[#171717] underline hover:text-[#ff806e]"
+            >
+              Reset filters
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Roster Table */}
       {students.length ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Roll no.</th><th className="px-5 py-3">Department</th><th className="px-5 py-3">Status</th><th className="px-5 py-3 text-right">Actions</th></tr></thead>
-            <tbody className="divide-y divide-slate-100">
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>Eligibility</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {students.map((student) => (
-                <tr key={student.id} className="hover:bg-slate-50/70">
-                  <td className="px-5 py-4"><strong className="block text-slate-900">{student.name}</strong><span className="text-xs text-slate-500">{student.email}</span></td>
-                  <td className="px-5 py-4 font-mono text-slate-700">{student.rollNo}</td>
-                  <td className="px-5 py-4 text-slate-700">{student.department || 'Not specified'}</td>
-                  <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${student.eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{student.eligible ? 'Eligible' : 'Disabled'}</span></td>
-                  <td className="px-5 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button type="button" title={student.eligible ? 'Disable eligibility' : 'Enable eligibility'} onClick={() => onToggle(student)} className="rounded-lg border border-slate-300 p-2 text-slate-600 hover:border-indigo-400 hover:text-indigo-600" aria-label={`${student.eligible ? 'Disable' : 'Enable'} ${student.name}`}>
-                        {student.eligible ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                <tr key={student.id}>
+                  <td>
+                    <strong className="block text-sm font-bold text-[#171717]">
+                      {student.name}
+                    </strong>
+                    <span className="font-mono text-xs text-neutral-500">
+                      {student.email}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="inline-block font-mono font-bold text-xs bg-[#f7f3ea] px-2.5 py-1 border-2 border-[#171717] shadow-[2px_2px_0_#171717]">
+                      {student.rollNo}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="text-sm font-medium text-neutral-800">
+                      {student.department || 'General / Unassigned'}
+                    </span>
+                  </td>
+                  <td>
+                    {student.eligible ? (
+                      <span className="admin-sticker cyan">
+                        <Check size={13} strokeWidth={3} /> ELIGIBLE
+                      </span>
+                    ) : (
+                      <span className="admin-sticker coral">
+                        <X size={13} strokeWidth={3} /> DISABLED
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <div className="flex items-center justify-end gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => onToggle(student)}
+                        title={student.eligible ? 'Disable student clearance' : 'Enable student clearance'}
+                        aria-label={`${student.eligible ? 'Disable' : 'Enable'} ${student.name}`}
+                        className={`admin-btn-icon ${student.eligible ? 'hover:bg-[#ff806e]' : 'hover:bg-[#62cfcc]'}`}
+                      >
+                        {student.eligible ? (
+                          <ToggleRight size={22} strokeWidth={2.5} className="text-[#0c6b58]" />
+                        ) : (
+                          <ToggleLeft size={22} strokeWidth={2.5} className="text-neutral-400" />
+                        )}
                       </button>
-                      <button type="button" title="Remove student" onClick={() => onRemove(student)} className="rounded-lg border border-slate-300 p-2 text-slate-500 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600" aria-label={`Remove ${student.name}`}><Trash2 size={18} /></button>
+                      <button
+                        type="button"
+                        onClick={() => onRemove(student)}
+                        title="Remove student record"
+                        aria-label={`Remove ${student.name}`}
+                        className="admin-btn-icon hover:bg-[#ff806e]"
+                      >
+                        <Trash2 size={17} strokeWidth={2.5} className="text-[#171717]" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -48,11 +149,18 @@ export default function StudentTable({ students, search, setSearch, status, setS
           </table>
         </div>
       ) : (
-        <div className="px-5 py-16 text-center">
-          <p className="font-semibold text-slate-800">No student records match.</p>
-          <p className="mt-1 text-sm text-slate-500">Adjust the filters or import a CSV to populate the roster.</p>
+        <div className="border-[3px] border-dashed border-[#171717] bg-white p-12 text-center shadow-[6px_6px_0_#171717]">
+          <div className="w-14 h-14 mx-auto grid place-items-center border-2 border-[#171717] bg-[#ffdc3d] shadow-[3px_3px_0_#171717]">
+            <Users size={28} strokeWidth={2.5} className="text-[#171717]" />
+          </div>
+          <h3 className="mt-4 text-xl font-['Archivo_Black'] text-[#171717]">
+            No matching student records
+          </h3>
+          <p className="mt-1.5 text-sm text-neutral-600 max-w-sm mx-auto">
+            Try adjusting your search criteria or upload a new college CSV file to populate the roster.
+          </p>
         </div>
       )}
-    </section>
+    </div>
   )
 }

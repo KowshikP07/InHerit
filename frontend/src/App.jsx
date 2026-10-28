@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Menu, ShieldCheck, X } from 'lucide-react'
 import './App.css'
 import { useNavigate } from 'react-router-dom'
@@ -26,31 +26,34 @@ function AuthDialog({ mode, onChangeMode, onClose, onAuthenticated }) {
     onChangeMode(nextMode)
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     setFormError('')
     const form = new FormData(event.currentTarget)
+    const password = String(form.get('password') ?? 'Student@123')
 
     if (mode === 'signup') {
       const email = String(form.get('email') ?? '')
-      const result = registerStudent({
+      const result = await registerStudent({
         name: form.get('name'),
         rollNo: form.get('rollNo'),
         email,
         department: form.get('department'),
         year: form.get('year'),
+        password,
       })
       if (!result.ok) {
         setFormError(result.message)
         return
       }
-      const session = loginStudent(email)
+      const session = await loginStudent(email, password)
       if (!session.ok) {
         setFormError(session.message)
         return
       }
     } else {
-      const session = loginStudent(String(form.get('email') ?? ''))
+      const email = String(form.get('email') ?? '')
+      const session = await loginStudent(email, password)
       if (!session.ok) {
         setFormError(session.message)
         return

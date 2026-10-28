@@ -46,7 +46,7 @@ export default function CreateAuction() {
     try {
       await saveImages(newIds, newFiles)
       const input = { ...values, sellerId: student.id, sellerName: student.name, imageIds: [...ids, ...newIds] }
-      const result = existing ? updateAuction(existing.id, student.id, input) : createAuction(input)
+      const result = existing ? await updateAuction(existing.id, student.id, input) : await createAuction(input, newFiles)
       if (!result.ok) { setStatus(result.message); setSaving(false); return }
       navigate(existing ? '/my-listings' : '/auctions')
     } catch (error) {

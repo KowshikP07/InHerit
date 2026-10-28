@@ -5,45 +5,104 @@ export default function CSVPreview({ preview, filename, onConfirm, onReset, impo
   const { rows, totals } = preview
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="preview-heading">
-      <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="border-[3px] border-[#171717] bg-white shadow-[8px_8px_0_#171717] overflow-hidden" aria-labelledby="preview-heading">
+      {/* Header bar */}
+      <div className="flex flex-col gap-4 border-b-[3px] border-[#171717] bg-[#f7f3ea] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600">Upload preview</p>
-          <h3 id="preview-heading" className="mt-1 font-semibold text-slate-950">{filename}</h3>
+          <span className="admin-eyebrow yellow">CSV Validation Preview</span>
+          <h3 id="preview-heading" className="mt-2 text-xl font-['Archivo_Black'] text-[#171717] tracking-tight">
+            {filename}
+          </h3>
         </div>
-        <button type="button" onClick={onReset} className="inline-flex items-center gap-2 self-start rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-          <X size={16} /> Cancel
+        <button
+          type="button"
+          onClick={onReset}
+          className="admin-btn admin-btn-white admin-btn-sm self-start sm:self-auto"
+        >
+          <X size={15} strokeWidth={3} /> Cancel import
         </button>
       </div>
 
-      <div className="grid grid-cols-3 border-b border-slate-200 bg-slate-50 text-center">
-        <div className="border-r border-slate-200 p-4"><strong className="block text-xl text-slate-950">{totals.rows}</strong><span className="text-xs text-slate-500">Processed</span></div>
-        <div className="border-r border-slate-200 p-4"><strong className="block text-xl text-emerald-600">{totals.valid}</strong><span className="text-xs text-slate-500">Ready</span></div>
-        <div className="p-4"><strong className="block text-xl text-rose-600">{totals.invalid}</strong><span className="text-xs text-slate-500">Need review</span></div>
+      {/* Metrics strip */}
+      <div className="grid grid-cols-3 border-b-[3px] border-[#171717] bg-white text-center divide-x-2 divide-[#171717]">
+        <div className="p-4 sm:p-5">
+          <span className="font-['Archivo_Black'] text-2xl sm:text-3xl text-[#171717] block">
+            {totals.rows}
+          </span>
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-500 mt-1 block">
+            Processed Rows
+          </span>
+        </div>
+        <div className="p-4 sm:p-5 bg-[#e8faf9]/50">
+          <span className="font-['Archivo_Black'] text-2xl sm:text-3xl text-[#0c6b58] block">
+            {totals.valid}
+          </span>
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#0c6b58] mt-1 block">
+            Ready to Import
+          </span>
+        </div>
+        <div className="p-4 sm:p-5 bg-[#fff1f0]/60">
+          <span className="font-['Archivo_Black'] text-2xl sm:text-3xl text-[#b42318] block">
+            {totals.invalid}
+          </span>
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#b42318] mt-1 block">
+            Issues / Excluded
+          </span>
+        </div>
       </div>
 
-      <div className="max-h-[420px] overflow-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="sticky top-0 bg-white text-xs uppercase tracking-wide text-slate-500 shadow-[0_1px_0_#e2e8f0]">
+      {/* Table view */}
+      <div className="max-h-[460px] overflow-auto">
+        <table className="admin-table">
+          <thead className="sticky top-0 z-10 shadow-[0_2px_0_#171717]">
             <tr>
-              <th className="px-4 py-3">Row</th><th className="px-4 py-3">Student</th><th className="px-4 py-3">Roll no.</th>
-              <th className="px-4 py-3">Email</th><th className="px-4 py-3">Department</th><th className="px-4 py-3">Status</th>
+              <th>Row</th>
+              <th>Student Name</th>
+              <th>Roll Number</th>
+              <th>Campus Email</th>
+              <th>Department</th>
+              <th>Validation Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {rows.map((row) => (
-              <tr key={`${row.rowNumber}-${row.email}`} className={row.valid ? '' : 'bg-rose-50/60'}>
-                <td className="px-4 py-3 text-slate-500">{row.rowNumber}</td>
-                <td className="px-4 py-3 font-semibold text-slate-900">{row.name || '—'}</td>
-                <td className="px-4 py-3 font-mono text-slate-700">{row.rollNo || '—'}</td>
-                <td className="max-w-56 truncate px-4 py-3 text-slate-700">{row.email || '—'}</td>
-                <td className="px-4 py-3 text-slate-700">{row.department || '—'}</td>
-                <td className="min-w-72 px-4 py-3">
+              <tr
+                key={`${row.rowNumber}-${row.email}`}
+                className={row.valid ? '' : 'bg-[#fff1f0]/60 hover:bg-[#ffe4e2]'}
+              >
+                <td className="font-mono text-xs text-neutral-500 font-bold">
+                  #{row.rowNumber}
+                </td>
+                <td className="font-bold text-[#171717]">
+                  {row.name || '—'}
+                </td>
+                <td>
+                  <span className="font-mono text-xs bg-[#f7f3ea] px-2 py-0.5 border border-[#171717]">
+                    {row.rollNo || '—'}
+                  </span>
+                </td>
+                <td className="font-mono text-xs text-neutral-700 max-w-[220px] truncate">
+                  {row.email || '—'}
+                </td>
+                <td className="text-sm text-neutral-700">
+                  {row.department || '—'}
+                </td>
+                <td className="min-w-[240px]">
                   {row.valid ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={14} /> Valid</span>
+                    <span className="admin-sticker cyan">
+                      <CheckCircle2 size={13} strokeWidth={3} /> Ready
+                    </span>
                   ) : (
-                    <div className="space-y-1 text-xs font-medium text-rose-700">
-                      {row.errors.map((error) => <p key={error} className="flex items-start gap-1"><AlertTriangle className="mt-0.5 shrink-0" size={13} />{error}</p>)}
+                    <div className="space-y-1">
+                      {row.errors.map((error) => (
+                        <span
+                          key={error}
+                          className="flex items-center gap-1.5 text-xs font-bold text-[#b42318]"
+                        >
+                          <AlertTriangle size={13} strokeWidth={2.5} className="shrink-0" />
+                          {error}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </td>
@@ -53,10 +112,21 @@ export default function CSVPreview({ preview, filename, onConfirm, onReset, impo
         </table>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-500">Only {totals.valid} valid row(s) will be added. Invalid and conflicting rows are excluded.</p>
-        <button type="button" disabled={!totals.valid || importing} onClick={onConfirm} className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
-          <Upload size={17} /> {importing ? 'Importing…' : `Import ${totals.valid} student${totals.valid === 1 ? '' : 's'}`}
+      {/* Footer bar */}
+      <div className="flex flex-col gap-4 border-t-[3px] border-[#171717] bg-[#f7f3ea] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-medium text-neutral-700">
+          Only the <strong>{totals.valid}</strong> valid row(s) will be committed to the college roster. Duplicate and invalid rows will be ignored.
+        </p>
+        <button
+          type="button"
+          disabled={!totals.valid || importing}
+          onClick={onConfirm}
+          className="admin-btn admin-btn-primary shrink-0"
+        >
+          <Upload size={17} strokeWidth={3} />
+          <span>
+            {importing ? 'Processing Import…' : `Confirm Import (${totals.valid} Student${totals.valid === 1 ? '' : 's'})`}
+          </span>
         </button>
       </div>
     </section>

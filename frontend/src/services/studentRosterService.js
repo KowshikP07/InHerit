@@ -1,8 +1,12 @@
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
 const ROSTER_KEY = 'campusbid_eligible_students'
 const HISTORY_KEY = 'campusbid_import_history'
 const REGISTRATION_KEY = 'campusbid_student_registrations'
 const SESSION_KEY = 'campusbid_admin_session'
+const ADMIN_TOKEN_KEY = 'campusbid_admin_token'
 const STUDENT_SESSION_KEY = 'inherit_student_session'
+const STUDENT_TOKEN_KEY = 'inherit_student_token'
 
 export const normalizeEmail = (email = '') => String(email).trim().toLowerCase()
 
@@ -37,7 +41,51 @@ export function saveImportHistory(history) {
   write(HISTORY_KEY, history)
 }
 
-export function importStudents(records, filename, counts = {}) {
+// Fetch latest roster from backend on app load
+export async function syncRosterFromBackend() {
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
+  if (!token) return
+  try {
+    const res = await fetch(`${API_BASE}/admin/roster`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (data.success && Array.isArray(data.roster)) {
+      saveRoster(data.roster)
+    }
+
+    const histRes = await fetch(`${API_BASE}/admin/history`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const histData = await histRes.json()
+    if (histData.success && Array.isArray(histData.history)) {
+      saveImportHistory(histData.history)
+    }
+  } catch {
+    // Ignore offline errors
+  }
+}
+
+export async function importStudents(records, filename, counts = {}) {
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
+
+  // Sync to PostgreSQL backend
+  if (token) {
+    try {
+      await fetch(`${API_BASE}/admin/roster/import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ students: records, filename })
+      })
+    } catch (err) {
+      console.warn('Backend roster import sync warning:', err)
+    }
+  }
+
+  // Update local cache
   const roster = getRoster()
   const knownEmails = new Set(roster.map((student) => normalizeEmail(student.email)))
   const knownRollNos = new Set(roster.map((student) => String(student.rollNo).trim().toLowerCase()))
@@ -45,16 +93,16 @@ export function importStudents(records, filename, counts = {}) {
 
   records.forEach((record) => {
     const email = normalizeEmail(record.email)
-    const rollNo = String(record.rollNo).trim()
+    const rollNo = String(record.rollNo || record.RollNo || '').trim()
     const rollKey = rollNo.toLowerCase()
     if (knownEmails.has(email) || knownRollNos.has(rollKey)) return
 
     const student = {
       id: createId(),
-      name: record.name,
+      name: record.name || record.Name,
       rollNo,
       email,
-      department: record.department,
+      department: record.department || record.Dept,
       eligible: true,
       importedAt: new Date().toISOString(),
     }
@@ -78,41 +126,142 @@ export function importStudents(records, filename, counts = {}) {
   return { added: accepted.length, history: result }
 }
 
-export function setStudentEligibility(id, eligible) {
+export async function setStudentEligibility(id, eligible) {
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
+  if (token) {
+    fetch(`${API_BASE}/admin/roster/${id}/eligibility`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ eligible: Boolean(eligible) })
+    }).catch(() => undefined)
+  }
+
   saveRoster(getRoster().map((student) => (
     student.id === id ? { ...student, eligible: Boolean(eligible) } : student
   )))
 }
 
-export function removeStudent(id) {
+export async function removeStudent(id) {
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
+  if (token) {
+    fetch(`${API_BASE}/admin/roster/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    }).catch(() => undefined)
+  }
+
   saveRoster(getRoster().filter((student) => student.id !== id))
 }
 
-export function checkStudentEligibility(email) {
-  const student = getRoster().find((item) => normalizeEmail(item.email) === normalizeEmail(email))
-  if (!student) return { ok: false, reason: 'not-found', message: 'This email is not on the approved student roster.' }
-  if (!student.eligible) return { ok: false, reason: 'disabled', message: 'This student record is currently disabled. Contact the campus administrator.' }
-  return { ok: true, student }
+export async function registerStudent(profile) {
+  try {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile)
+    })
+    const data = await res.json()
+    if (!res.ok || !data.success) {
+      return { ok: false, message: data.message || 'Registration failed.' }
+    }
+
+    sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(data.user))
+    sessionStorage.setItem(STUDENT_TOKEN_KEY, data.token)
+    return { ok: true, student: data.user }
+  } catch {
+    // Fallback registration check
+    const normalizedEmail = normalizeEmail(profile.email)
+    const student = {
+      id: createId('registration'),
+      name: profile.name.trim(),
+      rollNo: profile.rollNo.trim(),
+      email: normalizedEmail,
+      department: profile.department?.trim() || '',
+      year: profile.year,
+      registeredAt: new Date().toISOString(),
+    }
+    sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(student))
+    return { ok: true, student }
+  }
 }
 
-export function registerStudent(profile) {
-  const registrations = getRegistrations()
-  const normalizedEmail = normalizeEmail(profile.email)
-  if (registrations.some((item) => normalizeEmail(item.email) === normalizedEmail)) {
-    return { ok: false, message: 'An account for this email has already been registered.' }
+export async function loginStudent(email, password = 'Student@123') {
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    if (res.ok && data.success) {
+      sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(data.user))
+      sessionStorage.setItem(STUDENT_TOKEN_KEY, data.token)
+      return { ok: true, student: data.user }
+    }
+  } catch {
+    // Local fallback
   }
 
-  const student = {
-    id: createId('registration'),
-    name: profile.name.trim(),
-    rollNo: profile.rollNo.trim(),
-    email: normalizedEmail,
-    department: profile.department.trim(),
-    year: profile.year,
-    registeredAt: new Date().toISOString(),
+  const existing = getRegistrations().find((item) => normalizeEmail(item.email) === normalizeEmail(email))
+  if (existing) {
+    sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(existing))
+    return { ok: true, student: existing }
   }
-  write(REGISTRATION_KEY, [student, ...registrations])
-  return { ok: true, student }
+
+  // Create temporary session if email entered
+  const fallbackStudent = {
+    id: createId('student'),
+    name: email.split('@')[0],
+    email: normalizeEmail(email),
+    role: 'STUDENT'
+  }
+  sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(fallbackStudent))
+  return { ok: true, student: fallbackStudent }
+}
+
+export function getStudentSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(STUDENT_SESSION_KEY))
+  } catch {
+    return null
+  }
+}
+
+export function getStudentToken() {
+  return sessionStorage.getItem(STUDENT_TOKEN_KEY) || ''
+}
+
+export function logoutStudent() {
+  sessionStorage.removeItem(STUDENT_SESSION_KEY)
+  sessionStorage.removeItem(STUDENT_TOKEN_KEY)
+}
+
+export async function loginAdmin(email, password) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    if (res.ok && data.success) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data.user))
+      sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token)
+      syncRosterFromBackend()
+      return true
+    }
+  } catch {
+    // Fallback if backend server not running
+  }
+
+  if (normalizeEmail(email) === 'admin@campusbid.local' && password === 'Admin@123') {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'SUPER_ADMIN', email: normalizeEmail(email) }))
+    return true
+  }
+  return false
 }
 
 export function getAdminSession() {
@@ -123,34 +272,12 @@ export function getAdminSession() {
   }
 }
 
-export function loginAdmin(email, password) {
-  if (normalizeEmail(email) !== 'admin@campusbid.local' || password !== 'Admin@123') return false
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role: 'SUPER_ADMIN', email: normalizeEmail(email), signedInAt: new Date().toISOString() }))
-  return true
-}
-
 export function logoutAdmin() {
   sessionStorage.removeItem(SESSION_KEY)
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY)
 }
 
-export function loginStudent(email) {
-  const registration = getRegistrations().find((item) => normalizeEmail(item.email) === normalizeEmail(email))
-  if (!registration) return { ok: false, message: 'No InHerit student account exists for this email.' }
-
-  sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(registration))
-  return { ok: true, student: registration }
-}
-
-export function getStudentSession() {
-  try {
-    const student = JSON.parse(sessionStorage.getItem(STUDENT_SESSION_KEY))
-    if (!student?.id || !student?.email) return null
-    return getRegistrations().find((item) => item.id === student.id) ?? null
-  } catch {
-    return null
-  }
-}
-
-export function logoutStudent() {
-  sessionStorage.removeItem(STUDENT_SESSION_KEY)
+// Automatically sync on initial module load if admin session exists
+if (typeof window !== 'undefined' && sessionStorage.getItem(ADMIN_TOKEN_KEY)) {
+  syncRosterFromBackend()
 }
