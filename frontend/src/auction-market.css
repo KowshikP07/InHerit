@@ -1,0 +1,91 @@
+.market-shell { min-height: 100vh; background: #f7f3ea; }
+.market-header { position: sticky; top: 0; z-index: 30; min-height: 76px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 12px max(20px, calc((100vw - 1180px)/2)); border-bottom: 3px solid #171717; background: rgba(247,243,234,.96); }
+.market-brand { display:flex; align-items:center; gap:9px; text-decoration:none; font:22px 'Archivo Black'; }
+.market-brand span { display:grid; place-items:center; width:42px; height:42px; border:3px solid #171717; background:#ffdc3d; box-shadow:3px 3px #171717; }
+.market-header nav { display:flex; gap:6px; }
+.market-header nav a { display:flex; align-items:center; gap:6px; padding:10px 12px; border:2px solid transparent; text-decoration:none; font-size:13px; font-weight:800; }
+.market-header nav a.active { border-color:#171717; background:#62cfcc; box-shadow:3px 3px #171717; }
+.market-account { justify-self:end; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; }
+.market-account span { max-width:150px; overflow:hidden; text-overflow:ellipsis; }
+.market-account button { width:38px; height:38px; display:grid; place-items:center; border:2px solid #171717; background:#ff806e; }
+.market-page { width:min(1180px,calc(100% - 40px)); margin:0 auto; padding:48px 0 80px; }
+.market-heading { margin-bottom:28px; }
+.market-heading p { display:inline-block; margin:0 0 14px; border:2px solid #171717; background:#ffdc3d; box-shadow:3px 3px #171717; padding:6px 9px; font:12px 'DM Mono'; }
+.market-heading h1 { margin:0; font:52px/.95 'Archivo Black'; letter-spacing:-.04em; }
+.market-heading span { display:block; margin-top:12px; color:#555; }
+.market-filters { display:grid; grid-template-columns:2fr repeat(3,1fr); gap:12px; margin-bottom:24px; padding:16px; border:3px solid #171717; background:white; box-shadow:5px 5px #171717; }
+.market-filters label,.market-field { display:grid; gap:7px; font-size:13px; font-weight:800; }
+.market-filters input,.market-filters select,.market-field input,.market-field textarea,.market-field select { width:100%; min-height:46px; border:2px solid #171717; border-radius:0; background:white; padding:10px 12px; outline:none; }
+.market-filters input:focus,.market-field input:focus,.market-field textarea:focus,.market-field select:focus { background:#fffbea; box-shadow:3px 3px #171717; }
+.auction-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px; }
+.auction-card-market { min-width:0; border:3px solid #171717; background:white; box-shadow:7px 7px #171717; }
+.auction-card-image { display:block; height:220px; overflow:hidden; border-bottom:3px solid #171717; background:#62cfcc; }
+.auction-card-image img,.auction-card-image .auction-image-placeholder { width:100%; height:100%; object-fit:cover; }
+.auction-card-body { padding:18px; }
+.auction-tags { display:flex; flex-wrap:wrap; gap:7px; }
+.auction-tags span { border:2px solid #171717; background:#ffdc3d; padding:5px 7px; font:10px 'DM Mono'; text-transform:uppercase; }
+.auction-tags .ended-tag { background:#d9d9d9; }
+.auction-card-body h2 { margin:18px 0 8px; font:24px/1 'Archivo Black'; }
+.auction-card-body h2 a { text-decoration:none; }
+.auction-card-body > p { height:44px; overflow:hidden; margin:0; color:#666; font-size:13px; line-height:1.55; }
+.auction-card-meta { display:flex; justify-content:space-between; align-items:end; margin-top:18px; padding-top:14px; border-top:2px solid #171717; }
+.auction-card-meta small { display:block; margin-bottom:4px; font:9px 'DM Mono'; }
+.auction-card-meta strong { font:24px 'Archivo Black'; }
+.auction-card-meta > span { font-size:12px; font-weight:800; }
+.auction-seller { display:flex; justify-content:space-between; gap:10px; margin:14px 0; color:#555; font-size:12px; }
+.market-button { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; border:3px solid #171717; background:#ff806e; box-shadow:4px 4px #171717; padding:0 16px; color:#171717; text-decoration:none; font-weight:800; }
+.market-card-button { width:100%; }
+.market-empty,.market-state { min-height:270px; display:grid; place-items:center; align-content:center; gap:12px; border:3px solid #171717; background:white; box-shadow:7px 7px #171717; text-align:center; }
+.market-empty svg { width:44px; height:44px; }
+.market-empty h2,.market-state h1 { margin:0; font:32px 'Archivo Black'; }
+.market-empty p,.market-state p { margin:0 0 10px; color:#666; }
+.market-back { display:inline-flex; align-items:center; gap:7px; margin-bottom:25px; border:0; background:transparent; font-weight:800; text-decoration:none; }
+.market-form { border:3px solid #171717; background:white; box-shadow:8px 8px #171717; padding:24px; }
+.market-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.market-wide { grid-column:1/-1; }
+.market-field-error { color:#b42318; font-size:12px; }
+.market-field textarea { resize:vertical; }
+.market-upload { margin-top:22px; }
+.market-upload > label { display:grid; place-items:center; gap:7px; min-height:130px; border:3px dashed #171717; background:#62cfcc; text-align:center; cursor:pointer; }
+.market-upload > input { display:none; }
+.market-upload > .market-field-error { display:block; margin-top:8px; }
+.market-previews { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:14px; }
+.market-preview { height:120px; position:relative; border:2px solid #171717; }
+.market-preview img,.market-preview > span { width:100%; height:100%; object-fit:cover; }
+.market-preview button { position:absolute; top:5px; right:5px; width:34px; height:34px; display:grid; place-items:center; border:2px solid #171717; background:white; }
+.market-alert { border:2px solid #b42318; background:#fff1f0; padding:12px; color:#b42318; font-weight:800; }
+.market-submit { width:100%; margin-top:22px; }
+.detail-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:28px; }
+.detail-gallery { display:grid; gap:12px; }
+.detail-gallery img { width:100%; max-height:520px; object-fit:cover; border:3px solid #171717; box-shadow:7px 7px #171717; }
+.detail-info { align-self:start; border:3px solid #171717; background:white; box-shadow:7px 7px #171717; padding:24px; }
+.detail-info h1 { margin:20px 0 12px; font:42px/1 'Archivo Black'; }
+.detail-description { color:#555; line-height:1.65; }
+.detail-info dl { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.detail-info dl div { border-top:2px solid #171717; padding-top:10px; }
+.detail-info dt { color:#777; font:10px 'DM Mono'; text-transform:uppercase; }
+.detail-info dd { margin:4px 0 0; font-weight:800; }
+.countdown { border:3px solid #171717; background:#ffdc3d; box-shadow:4px 4px #171717; padding:14px; text-align:center; }
+.countdown small,.countdown span { display:block; font:10px 'DM Mono'; }
+.countdown strong { display:block; margin:7px 0; font:32px 'Archivo Black'; }
+.countdown.ended { background:#ddd; }
+.future-bid { margin-top:18px; border:2px dashed #171717; padding:14px; font-size:13px; }
+.future-bid p { margin:5px 0 0; color:#666; }
+.my-listings { display:grid; gap:14px; }
+.my-listings article { display:flex; justify-content:space-between; align-items:center; gap:20px; border:3px solid #171717; background:white; box-shadow:5px 5px #171717; padding:18px; }
+.my-listings h2 { margin:8px 0 5px; font:22px 'Archivo Black'; }
+.my-listings p { margin:0; color:#666; font-size:13px; }
+.status-tag { border:2px solid #171717; background:#62cfcc; padding:4px 7px; font:9px 'DM Mono'; }
+.status-tag.cancelled { background:#ddd; }
+.listing-actions { display:flex; gap:8px; }
+.listing-actions a,.listing-actions button { display:flex; align-items:center; gap:5px; border:2px solid #171717; background:white; padding:8px; font-size:12px; font-weight:800; text-decoration:none; }
+.listing-actions svg { width:16px; }
+.market-confirm { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:rgba(23,23,23,.72); }
+.market-confirm section { width:min(440px,100%); border:3px solid #171717; background:white; box-shadow:8px 8px #ff806e; padding:22px; }
+.market-confirm h2 { margin:0; font:28px 'Archivo Black'; }
+.market-confirm div { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.market-confirm button { border:2px solid #171717; background:white; padding:9px 12px; font-weight:800; }
+.market-confirm button:last-child { background:#ff806e; }
+.auction-image-placeholder { display:grid; place-items:center; height:100%; color:#555; background:#62cfcc; }
+@media (max-width:900px) { .market-header { grid-template-columns:1fr auto; } .market-header nav { grid-column:1/-1; grid-row:2; justify-content:center; order:3; } .market-page { width:min(100% - 32px,1180px); } .market-filters,.auction-grid { grid-template-columns:repeat(2,1fr); } .detail-grid { grid-template-columns:1fr; } }
+@media (max-width:560px) { .market-header { min-height:68px; padding:10px 16px; } .market-brand { font-size:18px; } .market-brand span { width:38px; height:38px; } .market-account span { display:none; } .market-header nav { width:100%; overflow-x:auto; justify-content:flex-start; } .market-header nav a { white-space:nowrap; } .market-page { width:calc(100% - 24px); padding-top:32px; } .market-heading h1 { font-size:38px; } .market-filters,.auction-grid,.market-form-grid,.detail-info dl { grid-template-columns:1fr; } .market-wide { grid-column:auto; } .market-form { padding:16px; } .market-previews { grid-template-columns:repeat(2,1fr); } .my-listings article { align-items:flex-start; flex-direction:column; } .listing-actions { width:100%; flex-wrap:wrap; } .detail-info h1 { font-size:34px; } }

@@ -2,6 +2,7 @@ const ROSTER_KEY = 'campusbid_eligible_students'
 const HISTORY_KEY = 'campusbid_import_history'
 const REGISTRATION_KEY = 'campusbid_student_registrations'
 const SESSION_KEY = 'campusbid_admin_session'
+const STUDENT_SESSION_KEY = 'inherit_student_session'
 
 export const normalizeEmail = (email = '') => String(email).trim().toLowerCase()
 
@@ -130,4 +131,26 @@ export function loginAdmin(email, password) {
 
 export function logoutAdmin() {
   sessionStorage.removeItem(SESSION_KEY)
+}
+
+export function loginStudent(email) {
+  const registration = getRegistrations().find((item) => normalizeEmail(item.email) === normalizeEmail(email))
+  if (!registration) return { ok: false, message: 'No InHerit student account exists for this email.' }
+
+  sessionStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(registration))
+  return { ok: true, student: registration }
+}
+
+export function getStudentSession() {
+  try {
+    const student = JSON.parse(sessionStorage.getItem(STUDENT_SESSION_KEY))
+    if (!student?.id || !student?.email) return null
+    return getRegistrations().find((item) => item.id === student.id) ?? null
+  } catch {
+    return null
+  }
+}
+
+export function logoutStudent() {
+  sessionStorage.removeItem(STUDENT_SESSION_KEY)
 }

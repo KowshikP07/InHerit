@@ -1,7 +1,8 @@
 ﻿import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Menu, ShieldCheck, X } from 'lucide-react'
 import './App.css'
-import { checkStudentEligibility, registerStudent } from './services/studentRosterService.js'
+import { useNavigate } from 'react-router-dom'
+import { loginStudent, registerStudent } from './services/studentRosterService.js'
 
 const navItems = [
   { label: 'How it works', href: '#how-it-works' },
@@ -9,7 +10,7 @@ const navItems = [
   { label: 'Why InHerit', href: '#why-InHerit' },
 ]
 
-function AuthDialog({ mode, onChangeMode, onClose }) {
+function AuthDialog({ mode, onChangeMode, onClose, onAuthenticated }) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -32,12 +33,6 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
 
     if (mode === 'signup') {
       const email = String(form.get('email') ?? '')
-      const eligibility = checkStudentEligibility(email)
-      if (!eligibility.ok) {
-        setFormError(eligibility.message)
-        return
-      }
-
       const result = registerStudent({
         name: form.get('name'),
         rollNo: form.get('rollNo'),
@@ -47,6 +42,17 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
       })
       if (!result.ok) {
         setFormError(result.message)
+        return
+      }
+      const session = loginStudent(email)
+      if (!session.ok) {
+        setFormError(session.message)
+        return
+      }
+    } else {
+      const session = loginStudent(String(form.get('email') ?? ''))
+      if (!session.ok) {
+        setFormError(session.message)
         return
       }
     }
@@ -75,7 +81,7 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
             <span><Check size={28} strokeWidth={3} /></span>
             <h2 id="auth-title">{mode === 'signup' ? 'Check your campus email.' : 'You’re in.'}</h2>
             <p>{mode === 'signup' ? 'We’ll send a one-time code to verify it’s you.' : 'The InHerit sign-in flow will connect next.'}</p>
-            <button className="primary-button" type="button" onClick={onClose}>Got it</button>
+            <button className="primary-button" type="button" onClick={onAuthenticated}>Got it</button>
           </div>
         ) : (
           <>
@@ -83,7 +89,7 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
             <h2 id="auth-title">{mode === 'signup' ? 'Meet your next owner.' : 'Back for another bid?'}</h2>
             <p className="auth-copy">
               {mode === 'signup'
-                ? 'Use your eligible campus email to start buying or selling.'
+                ? 'Use your campus email to start buying or selling.'
                 : 'Log in to track bids, listings, and pickups.'}
             </p>
             <form onSubmit={handleSubmit}>
@@ -138,6 +144,7 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
 }
 
 export default function App() {
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [authMode, setAuthMode] = useState(null)
 
@@ -169,6 +176,7 @@ export default function App() {
           {navItems.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</a>
           ))}
+          {/* <Link to="/auctions" onClick={() => setMenuOpen(false)}>Browse auctions</Link> */}
           <div className="mobile-auth">
             <button type="button" onClick={() => openAuth('signin')}>Log in</button>
             <button className="primary-button" type="button" onClick={() => openAuth('signup')}>Join campus</button>
@@ -176,6 +184,7 @@ export default function App() {
         </nav>
 
         <div className="desktop-auth">
+          {/* <Link className="text-button" to="/auctions">Browse auctions</Link> */}
           <button className="text-button" type="button" onClick={() => openAuth('signin')}>Log in</button>
           <button className="primary-button" type="button" onClick={() => openAuth('signup')}>
             Join campus <ArrowRight size={18} strokeWidth={3} />
@@ -248,7 +257,15 @@ export default function App() {
       </main>
 
       {authMode && (
-        <AuthDialog mode={authMode} onChangeMode={setAuthMode} onClose={() => setAuthMode(null)} />
+        <AuthDialog
+          mode={authMode}
+          onChangeMode={setAuthMode}
+          onClose={() => setAuthMode(null)}
+          onAuthenticated={() => {
+            setAuthMode(null)
+            navigate('/auctions')
+          }}
+        />
       )}
     </div>
   )
