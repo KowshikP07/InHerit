@@ -12,7 +12,7 @@ const headerMap = new Map([
 
 export function validateCsvFile(file) {
   if (!file) return 'Choose a CSV file to continue.'
-  if (!\.csv$/i.test(file.name)) return 'Only .csv files are supported.'
+  if (!/\.csv$/i.test(file.name)) return 'Only .csv files are supported.'
   if (file.size === 0) return 'The selected CSV file is empty.'
   if (file.size > MAX_FILE_SIZE) return 'The CSV file must be 5 MB or smaller.'
   return null

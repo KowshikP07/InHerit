@@ -1,6 +1,7 @@
-﻿import { useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Menu, ShieldCheck, X } from 'lucide-react'
 import './App.css'
+import { checkStudentEligibility, registerStudent } from './services/studentRosterService.js'
 
 const navItems = [
   { label: 'How it works', href: '#how-it-works' },
@@ -10,9 +11,46 @@ const navItems = [
 
 function AuthDialog({ mode, onChangeMode, onClose }) {
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [formError, setFormError] = useState('')
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [])
+
+  function changeMode(nextMode) {
+    setFormError('')
+    setIsSubmitted(false)
+    onChangeMode(nextMode)
+  }
 
   function handleSubmit(event) {
     event.preventDefault()
+    setFormError('')
+    const form = new FormData(event.currentTarget)
+
+    if (mode === 'signup') {
+      const email = String(form.get('email') ?? '')
+      const eligibility = checkStudentEligibility(email)
+      if (!eligibility.ok) {
+        setFormError(eligibility.message)
+        return
+      }
+
+      const result = registerStudent({
+        name: form.get('name'),
+        rollNo: form.get('rollNo'),
+        email,
+        department: form.get('department'),
+        year: form.get('year'),
+      })
+      if (!result.ok) {
+        setFormError(result.message)
+        return
+      }
+    }
+
     setIsSubmitted(true)
   }
 
@@ -29,8 +67,8 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
           <X size={20} strokeWidth={3} />
         </button>
         <div className="auth-tabs" aria-label="Authentication options">
-          <button className={mode === 'signin' ? 'active' : ''} type="button" onClick={() => onChangeMode('signin')}>Log in</button>
-          <button className={mode === 'signup' ? 'active' : ''} type="button" onClick={() => onChangeMode('signup')}>Join campus</button>
+          <button className={mode === 'signin' ? 'active' : ''} type="button" onClick={() => changeMode('signin')}>Log in</button>
+          <button className={mode === 'signup' ? 'active' : ''} type="button" onClick={() => changeMode('signup')}>Join campus</button>
         </div>
         {isSubmitted ? (
           <div className="auth-success" aria-live="polite">
@@ -50,10 +88,33 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
             </p>
             <form onSubmit={handleSubmit}>
               {mode === 'signup' && (
-                <label>
-                  Full name
-                  <input name="name" type="text" autoComplete="name" required placeholder="Alex Student" />
-                </label>
+                <>
+                  <label>
+                    Full name
+                    <input name="name" type="text" autoComplete="name" required placeholder="Alex Student" />
+                  </label>
+                  <div className="form-row">
+                    <label>
+                      Roll number
+                      <input name="rollNo" type="text" required placeholder="23CSR001" />
+                    </label>
+                    <label>
+                      Study year
+                      <select name="year" required defaultValue="">
+                        <option value="" disabled>Select year</option>
+                        <option value="1">First year</option>
+                        <option value="2">Second year</option>
+                        <option value="3">Third year</option>
+                        <option value="4">Fourth year</option>
+                        <option value="5">Postgraduate</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label>
+                    Department
+                    <input name="department" type="text" required placeholder="Computer Science" />
+                  </label>
+                </>
               )}
               <label>
                 Campus email
@@ -63,6 +124,7 @@ function AuthDialog({ mode, onChangeMode, onClose }) {
                 Password
                 <input name="password" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={8} placeholder="8 characters minimum" />
               </label>
+              {formError && <p role="alert" className="form-error">{formError}</p>}
               <button className="primary-button auth-submit" type="submit">
                 {mode === 'signup' ? 'Verify my email' : 'Log in'}
                 <ArrowRight size={18} strokeWidth={3} />

@@ -68,7 +68,7 @@ export function importStudents(records, filename, counts = {}) {
     id: createId('import'),
     filename,
     importedAt: new Date().toISOString(),
-    totalRows: records.length,
+    totalRows: counts.totalRows ?? records.length,
     added: accepted.length,
     duplicates: counts.duplicates ?? records.length - accepted.length,
     invalid: counts.invalid ?? 0,

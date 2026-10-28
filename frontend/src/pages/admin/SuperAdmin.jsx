@@ -46,13 +46,13 @@ export default function SuperAdmin() {
         <nav className="mt-6 space-y-1">
           {tabs.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => { setActiveTab(id); setSidebarOpen(false) }} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${activeTab === id ? 'bg-white text-slate-950' : 'text-slate-300 hover:bg-white/10'}`}><Icon size={18} />{label}</button>)}
         </nav>
-        <div className="mt-auto border-t border-white/10 pt-4"><p class="mb-3 truncate px-2 text-xs text-slate-400">{session.email}</p><button onClick={logout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10"><LogOut size={18} />Log out</button></div>
+        <div className="mt-auto border-t border-white/10 pt-4"><p className="mb-3 truncate px-2 text-xs text-slate-400">{session.email}</p><button onClick={logout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-300 hover:bg-white/10"><LogOut size={18} />Log out</button></div>
       </aside>
 
       <main className="min-w-0">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-7">
           <button onClick={() => setSidebarOpen(true)} className="rounded-lg border border-slate-300 p-2 lg:hidden" aria-label="Open menu"><Menu size={20} /></button>
-          <p class="text-sm font-semibold text-slate-500">{tabs.find((tab) => tab.id === activeTab)?.label}</p>
+          <p className="text-sm font-semibold text-slate-500">{tabs.find((tab) => tab.id === activeTab)?.label}</p>
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Demo session</span>
         </header>
 
@@ -82,7 +82,7 @@ function Overview({ roster, history, openTab }) {
         <Stat label="Disabled" value={roster.length - eligible} icon={UserX} color="bg-slate-200 text-slate-700" />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold text-slate-950">Recent imports</h2>{history.length ? <div className="mt-4 space-y-3">{history.slice(0, 4).map((item) => <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-3"><div><strong className="text-sm">{item.filename}</strong><p class="text-xs text-slate-500">{item.added} added · {item.invalid ?? 0} invalid</p></div><span className="text-xs text-slate-400">{new Date(item.importedAt).toLocaleDateString()}</span></div>)}</div> : <EmptyPrompt text="No imports yet." />}</section>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-bold text-slate-950">Recent imports</h2>{history.length ? <div className="mt-4 space-y-3">{history.slice(0, 4).map((item) => <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-3"><div><strong className="text-sm">{item.filename}</strong><p className="text-xs text-slate-500">{item.added} added · {item.invalid ?? 0} invalid</p></div><span className="text-xs text-slate-400">{new Date(item.importedAt).toLocaleDateString()}</span></div>)}</div> : <EmptyPrompt text="No imports yet." />}</section>
         <section className="rounded-2xl border border-slate-200 bg-indigo-950 p-6 text-white shadow-sm"><FileUp className="text-amber-300" size={28} /><h2 className="mt-5 text-xl font-black">Add approved students</h2><p className="mt-2 text-sm leading-6 text-indigo-100">Upload the college CSV, preview conflicts, then confirm the import.</p><button onClick={() => openTab('import')} className="mt-5 rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-bold text-slate-950">Import CSV</button></section>
       </div>
     </>
@@ -124,7 +124,7 @@ function StudentImport() {
   function confirm() {
     if (!preview?.valid.length) return
     setImporting(true)
-    const result = importStudents(preview.valid, filename, { duplicates: preview.invalid.filter((row) => row.errors.some((error) => error.includes('Duplicate') || error.includes('already exists'))).length, invalid: preview.invalid.length })
+    const result = importStudents(preview.valid, filename, { totalRows: preview.totals.rows, duplicates: preview.invalid.filter((row) => row.errors.some((error) => error.includes('Duplicate') || error.includes('already exists'))).length, invalid: preview.invalid.length })
     setStatus(`${result.added} students added. ${preview.invalid.length} row(s) excluded.`)
     setImporting(false); setPreview(null); setFilename(''); if (inputRef.current) inputRef.current.value = ''
   }
@@ -133,7 +133,7 @@ function StudentImport() {
     <>
       <PageHeading title="Bulk student import" copy="Upload the college eligibility list. Nothing is added until you confirm." />
       <div onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); processFile(event.dataTransfer.files[0]) }} className={`rounded-2xl border-2 border-dashed p-8 text-center transition ${dragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 bg-white'}`}>
-        <FileUp className="mx-auto text-indigo-600" size={34} /><h2 class="mt-3 font-bold text-slate-950">Drop a college CSV here</h2><p class="mt-1 text-sm text-slate-500">Maximum 5 MB · headers: Name, RollNo, Email, optional Dept, gender, student_type, dob</p>
+        <FileUp className="mx-auto text-indigo-600" size={34} /><h2 className="mt-3 font-bold text-slate-950">Drop a college CSV here</h2><p className="mt-1 text-sm text-slate-500">Maximum 5 MB · headers: Name, RollNo, Email, optional Dept, gender, student_type, dob</p>
         <input ref={inputRef} id="student-csv" type="file" accept=".csv,text/csv" onChange={(event) => processFile(event.target.files[0])} className="sr-only" />
         <button onClick={() => inputRef.current?.click()} type="button" className="mt-5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white">Choose CSV file</button>
       </div>
